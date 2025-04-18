@@ -1,6 +1,6 @@
 ---
 - name: Update Apache to the latest version on Raspberry Pi
-  hosts: raspberrypi
+  hosts: 192.168.2.53
   become: true
   tasks:
     - name: Update APT package cache
