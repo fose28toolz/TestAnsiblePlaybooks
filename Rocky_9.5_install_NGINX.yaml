@@ -1,0 +1,40 @@
+---
+- name: Install NGINX on Rocky Linux 9.5
+  hosts: webservers
+  become: true
+  tasks:
+    - name: Ensure EPEL repository is enabled (optional, if needed)
+      ansible.builtin.dnf:
+        name: epel-release
+        state: present
+
+    - name: Install NGINX
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+
+    - name: Enable and start NGINX service
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Open HTTP and HTTPS ports in the firewall (if using firewalld)
+      ansible.builtin.firewalld:
+        port: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: true
+      with_items:
+        - 80/tcp
+        - 443/tcp
+      when: ansible_facts.services['firewalld'].state == 'running'
+
+    - name: Confirm NGINX is running
+      ansible.builtin.shell: systemctl is-active nginx
+      register: nginx_status
+      changed_when: false
+
+    - name: Debug NGINX status
+      ansible.builtin.debug:
+        msg: "NGINX is running: {{ nginx_status.stdout }}"
